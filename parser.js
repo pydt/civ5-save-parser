@@ -58,13 +58,8 @@ module.exports = {
           }
           i++;
         }
-        // Look backwards from end of chunk for the current player...
-        for (i = chunk.buffer.length - 1; i >= 0; i--) {
-          if (chunk.buffer[i] !== 0) {
-            result.player = chunk.buffer[i];
-            break;
-          }
-        }
+        // Look 4 bytes backwards from end of chunk for the current player...
+        result.player = chunk.buffer.readUInt32LE(chunk.buffer.length - 16);
       }
 
       // 11th chunk contains passwords

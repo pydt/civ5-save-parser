@@ -9,9 +9,11 @@ describe('Parser', function() {
   describe('#Validate Civ Parser', function() {
     let data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
     let result = parser.parse(data);
+    console.log(result);
 
     assert.equal(result.civilizations.length, 25);
     assert.equal(result.barbarianCount, 17);
+    assert.equal(result.player, 4);
 
     result.civilizations.forEach(function(s) {
       it('Civ type should be in range 1-3', function() {
