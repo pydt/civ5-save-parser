@@ -5,55 +5,71 @@ const fs = require('fs');
 const assert = require('assert');
 
 
-describe('Parser', function() {
-  describe('#Validate Civ Parser', function() {
+describe('Parser', () => {
+  it('Parses generic data correctly', () => {
     let data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
     let result = parser.parse(data);
-    console.log(result);
+  
+    assert.equal(result.civ, 'CIV5');
+    assert.equal(result.save, 8);
+    assert.equal(result.game, '1.0.3.279 (403694)');
+    assert.equal(result.build, '403694');
+    assert.equal(result.turn, 19);
+    assert.equal(result.startingCiv, 'CIVILIZATION_INDIA');
+    assert.equal(result.handicap, 'HANDICAP_PRINCE');
+    assert.equal(result.era, 'ERA_ANCIENT');
+    assert.equal(result.gameSpeed, 'GAMESPEED_QUICK');
+    assert.equal(result.worldSize, 'WORLDSIZE_STANDARD');
+    assert.equal(result.mapScript, 'Assets\\Maps\\Continents.lua');
 
     assert.equal(result.civilizations.length, 25);
     assert.equal(result.barbarianCount, 17);
     assert.equal(result.player, 4);
+    assert.equal(result.civilizations[4].password, 'berlin');
 
     result.civilizations.forEach(function(s) {
-      it('Civ type should be in range 1-3', function() {
-        assert.notEqual(-1, [1,2,3].indexOf(s.type));
-      });
-    });
-
-    it('default password should be berlin', function() {
-      assert.equal('berlin', result.civilizations[4].password);
+      assert.notEqual([1,2,3].indexOf(s.type), -1);
     });
   });
-});
 
-describe('ChangeCivPassword', function() {
-  describe('#Validate Civ Password', function() {
-    //Test values
-    let newPassword = "testing";
-    let changePosition = 4;
+  it('Can Change Civ Password', function() {
+    const newPassword = "testing";
+    const changePosition = 4;
 
-    let data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
-    let changePasswordResult = parser.changeCivPassword(data, changePosition, newPassword);
-    let result = parser.parse(changePasswordResult);
-    it('default password should be changed to ' + newPassword, function() {
-      assert.equal(newPassword, result.civilizations[changePosition].password);
-    });
+    const data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
+    const changePasswordResult = parser.changeCivPassword(data, changePosition, newPassword);
+    const result = parser.parse(changePasswordResult);
+    assert.equal(result.civilizations[changePosition].password, newPassword);
   });
-});
 
-describe('ChangeCivType', function() {
-  describe('#Validate Civ Types', function() {
-    //Test values
-    let changePosition = 2;
-    let changeValue = 1; 
+  it('Can Change Player Name', function() {
+    const newName = "newname";
+    const changePosition = 4;
 
-    let data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
-    let changeCivTypeResult = parser.changeCivType(data, changePosition, changeValue);
-    let result = parser.parse(changeCivTypeResult);
+    const data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
+    const changePasswordResult = parser.changePlayerName(data, changePosition, newName);
+    const result = parser.parse(changePasswordResult);
+    assert.equal(result.civilizations[changePosition].playerName, newName);
+  });
 
-    it('Civ type for position ' + changePosition + ' should be updated to ' + changeValue, function() {
-      assert.equal(changeValue, result.civilizations[changePosition].type);
-    });
+  it('Can Change Civ Type', function() {
+    const changePosition = 2;
+    const changeValue = 1; 
+
+    const data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
+    const changeCivTypeResult = parser.changeCivType(data, changePosition, changeValue);
+    const result = parser.parse(changeCivTypeResult);
+
+    assert.equal(result.civilizations[changePosition].type, changeValue);
+  });
+
+  it('Can Change Current Player Index', function() {
+    const newPlayer = 1;
+
+    const data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
+    const changeCivTypeResult = parser.changePlayer(data, newPlayer);
+    const result = parser.parse(changeCivTypeResult);
+
+    assert.equal(result.player, newPlayer);
   });
 });

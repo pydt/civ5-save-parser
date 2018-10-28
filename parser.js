@@ -14,6 +14,7 @@ module.exports = {
     };
 
     result.civilizations = [];
+
     while (null !== (chunk = getChunk(buffer, chunk.endIndex))) {
       // 1st chunk contains player names
       if (chunkCount === 1){
@@ -93,35 +94,15 @@ module.exports = {
     return result;
   },
   changeCivType: function(data, position, type){
-      const buffer = new Buffer(data);
-      let result = new Buffer(data);
-
-      let chunkCount = 0;
-      let chunk = {
-        endIndex: 0
-      };
-
-      while (null !== (chunk = getChunk(buffer, chunk.endIndex))) {
-        // either the 2nd or the 26th chunk contains the type/status of civilization - 1 alive, 2 dead, 3 human, 4 missing
-        if (chunkCount === 2 || chunkCount === 26){
-          let civCount = 0;
-          let abort = false;
-          while(chunk.pos < chunk.buffer.length){
-            if(civCount === position){
-              let pos = chunk.startIndex + chunk.pos;
-              let civType = result.slice(pos, pos + 4);
-              civType.writeUInt32LE(type, 0 );
-            }
-
-            readInt(chunk);
-            civCount++;
-          }
-        }
-        
-        chunkCount++;
-      }
-
-      return result;
+    // either the 2nd or the 26th chunk contains the type/status of civilization - 1 alive, 2 dead, 3 human, 4 missing
+    data = writeInt(data, 2, position, type);
+    return writeInt(data, 26, position, type);
+  },
+  changePlayer: function(data, newPlayer) {
+    const chunk = findChunk(data, 7);
+    const buffer = new Buffer(data);
+    buffer.writeUInt32LE(newPlayer, chunk.startIndex + chunk.buffer.length - 16);
+    return buffer;
   },
   changeCivPassword: function(data, position, password){
     return writeString(data, 11, position, password);
@@ -216,9 +197,8 @@ function encodeString(text){
   return result;
 }
 
-function writeString(data, chunkNum, position, newString){
+function findChunk(data, chunkNum) {
   const buffer = new Buffer(data);
-  let result;
 
   let chunkCount = 0;
   let chunk = {
@@ -227,25 +207,54 @@ function writeString(data, chunkNum, position, newString){
 
   while (null !== (chunk = getChunk(buffer, chunk.endIndex))) {
     if (chunkCount === chunkNum){
-      for(let i=0; i<position; i++){
-        readString(chunk);
-      }
-      let pos = chunk.startIndex + chunk.pos;
-      let encodedString = encodeString(newString);
-      let currentString = readString(chunk);
-
-      //create new buffer with new length
-      result = new Buffer(buffer.length - (currentString.length + 4) + encodedString.length);
-      //get buffer before currentString
-      buffer.copy(result, 0, 0, pos);
-      //add encodedString to buffer
-      encodedString.copy(result, pos);
-      //copy the rest of the buffer starting after the existing string 
-      buffer.copy(result, pos + encodedString.length, pos + currentString.length + 4);
+      return chunk;
     }
-
+    
     chunkCount++;
   }
+  
+  throw new Error('Could not find chunk ' + chunkNum);
+}
+
+function writeInt(data, chunkNum, position, newValue) {
+  const chunk = findChunk(data, chunkNum);
+  const buffer = new Buffer(data);
+  
+  let posCount = 0;
+  
+  while(chunk.pos < chunk.buffer.length){
+    if(posCount === position){
+      let pos = chunk.startIndex + chunk.pos;
+      let toUpdate = buffer.slice(pos, pos + 4);
+      toUpdate.writeUInt32LE(newValue);
+      return buffer;
+    }
+
+    readInt(chunk);
+    posCount++;
+  }
+  
+  throw new Error('Could not find position ' + position);
+}
+
+function writeString(data, chunkNum, position, newString){
+  const chunk = findChunk(data, chunkNum);
+
+  for(let i=0; i<position; i++){
+    readString(chunk);
+  }
+  let pos = chunk.startIndex + chunk.pos;
+  let encodedString = encodeString(newString);
+  let currentString = readString(chunk);
+
+  //create new buffer with new length
+  const result = new Buffer(data.length - (currentString.length + 4) + encodedString.length);
+  //get buffer before currentString
+  data.copy(result, 0, 0, pos);
+  //add encodedString to buffer
+  encodedString.copy(result, pos);
+  //copy the rest of the buffer starting after the existing string 
+  data.copy(result, pos + encodedString.length, pos + currentString.length + 4);
 
   return result;
 }
