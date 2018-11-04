@@ -157,23 +157,27 @@ function processHeader(buffer, result){
   result.gameSpeed = readString(buf);
   result.worldSize = readString(buf);
   result.mapScript = readString(buf);
+  result.mods = [];
+
+  const dlcLength = readInt(buf);
+
+  for (let i = 0; i < dlcLength; i++) {
+    const id = buf.buffer.slice(buf.pos, (buf.pos += 16)).toString('hex');
+    buf.pos += 4;
+    const name = readString(buf);
+
+    result.mods.push({ id, name });
+  }
 }
 
 function readString(buf, length){
-  let result = [];
   if(!length){
     length = readInt(buf);
     if(length === 0 || length > 1000)
       return '';
   }
-  
-  for(let i=0; i<length; i++){
-    result.push(buf.buffer[buf.pos]);
-    buf.pos++;
-  }
 
-  let resBuf = new Buffer(result);
-  return resBuf.toString();
+  return buf.buffer.slice(buf.pos, (buf.pos += length)).toString();
 }
 
 function readInt(buf){
