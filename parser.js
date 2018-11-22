@@ -144,6 +144,16 @@ function processHeader(buffer, result){
     pos: 0
   }
   result.civ = readString(buf, 4);
+
+  if (result.civ !== 'CIV5') {
+    buf.pos = 0;
+    result.civ = readString(buf, 5);
+
+    if (result.civ !== 'CIVBE') {
+      throw new Error('No Civ Save File Header Found!');
+    }
+  }
+
   result.save = readInt(buf);
   result.game = readString(buf);
   result.build = readString(buf);

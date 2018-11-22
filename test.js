@@ -72,4 +72,25 @@ describe('Parser', () => {
 
     assert.equal(result.player, newPlayer);
   });
+
+  it('Can parse beyond earth', function() {
+    const data = fs.readFileSync('./saves/beyondearth.CivBESave');
+    const result = parser.parse(data);
+  
+    assert.equal(result.civ, 'CIVBE');
+    assert.equal(result.save, 2);
+    assert.equal(result.game, '1.1.2.4035 ');
+    assert.equal(result.build, '');
+    assert.equal(result.turn, 0);
+    assert.equal(result.startingCiv, 'CIVILIZATION_ARC');
+    assert.equal(result.handicap, 'HANDICAP_SPUTNIK');
+    assert.equal(result.era, 'ERA_ANCIENT');
+    assert.equal(result.gameSpeed, 'GAMESPEED_QUICK');
+    assert.equal(result.worldSize, 'WORLDSIZE_SMALL');
+    assert.equal(result.mapScript, 'Assets\\Maps\\Protean.lua');
+
+    assert.equal(result.civilizations.length, 8);
+    assert.equal(result.barbarianCount, 0);
+    assert.equal(result.player, 1);
+  });
 });
