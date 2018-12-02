@@ -93,10 +93,23 @@ module.exports = {
 
     return result;
   },
-  changeCivType: function(data, position, type){
-    // either the 2nd or the 26th chunk contains the type/status of civilization - 1 alive, 2 dead, 3 human, 4 missing
+  changeCivType: function(data, position, type) {
+    const result = {};
+    processHeader(data, result);
+    console.log(result);
+
+    // type/status of civilization, seems to be in multiple places - 1 alive, 2 dead, 3 human, 4 missing
     data = writeInt(data, 2, position, type);
-    return writeInt(data, 26, position, type);
+
+    if (result.civ === 'CIV5') {
+     data = writeInt(data, 26, position, type);
+    }
+
+    if (result.civ === 'CIVBE') {
+      data = writeInt(data, 29, position, type);
+    }
+
+    return data;
   },
   changePlayer: function(data, newPlayer) {
     const chunk = findChunk(data, 7);
