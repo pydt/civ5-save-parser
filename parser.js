@@ -8,6 +8,11 @@ module.exports = {
     // Process header information
     processHeader(buffer, result);
 
+    // Make sure file ends correctly...
+    if (!buffer.slice(buffer.length - 4, buffer.length).equals(new Buffer([0, 0, 0xFF, 0xFF]))) {
+      throw new Error("Truncated save file detected!");
+    }
+
     let chunkCount = 0;
     let chunk = {
       endIndex: 0
@@ -96,7 +101,6 @@ module.exports = {
   changeCivType: function(data, position, type) {
     const result = {};
     processHeader(data, result);
-    console.log(result);
 
     // type/status of civilization, seems to be in multiple places - 1 alive, 2 dead, 3 human, 4 missing
     data = writeInt(data, 2, position, type);

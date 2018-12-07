@@ -93,4 +93,9 @@ describe('Parser', () => {
     assert.equal(result.barbarianCount, 0);
     assert.equal(result.player, 1);
   });
+
+  it('Correctly throws error on bad save', () => {
+    const data = fs.readFileSync('./saves/bad.Civ5Save');
+    assert.throws(() => parser.parse(data));
+  });
 });
