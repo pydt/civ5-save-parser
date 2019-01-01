@@ -98,4 +98,29 @@ describe('Parser', () => {
     const data = fs.readFileSync('./saves/bad.Civ5Save');
     assert.throws(() => parser.parse(data));
   });
+  
+  it('Parses turn 64', () => {
+    let data = fs.readFileSync('./saves/turn64.Civ5Save');
+    let result = parser.parse(data);
+  
+    assert.equal(result.civ, 'CIV5');
+    assert.equal(result.save, 8);
+    assert.equal(result.game, '1.0.3.279 (403694)');
+    assert.equal(result.build, '403694');
+    assert.equal(result.turn, 64);
+    assert.equal(result.startingCiv, 'CIVILIZATION_GREECE');
+    assert.equal(result.handicap, 'HANDICAP_PRINCE');
+    assert.equal(result.era, 'ERA_ANCIENT');
+    assert.equal(result.gameSpeed, 'GAMESPEED_QUICK');
+    assert.equal(result.worldSize, 'WORLDSIZE_TINY');
+    assert.equal(result.mapScript, 'Assets\\Maps\\Continents.lua');
+
+    assert.equal(result.civilizations.length, 13);
+    assert.equal(result.barbarianCount, 9);
+    assert.equal(result.player, 0);
+
+    result.civilizations.forEach(function(s) {
+      assert.notEqual([1,2,3].indexOf(s.type), -1);
+    });
+  });
 });
