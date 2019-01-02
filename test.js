@@ -7,9 +7,9 @@ const assert = require('assert');
 
 describe('Parser', () => {
   it('Parses generic data correctly', () => {
-    let data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
-    let result = parser.parse(data);
-  
+    const data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
+    const result = parser.parse(data);
+
     assert.equal(result.civ, 'CIV5');
     assert.equal(result.save, 8);
     assert.equal(result.game, '1.0.3.279 (403694)');
@@ -27,16 +27,16 @@ describe('Parser', () => {
     assert.equal(result.player, 4);
     assert.equal(result.civilizations[4].password, 'berlin');
 
-    result.civilizations.forEach(function(s) {
-      assert.notEqual([1,2,3].indexOf(s.type), -1);
+    result.civilizations.forEach((s) => {
+      assert.notEqual([1, 2, 3].indexOf(s.type), -1);
     });
   });
 
-  describe('Can Change Civ Password', function() {
-    const ccpTest = filename => {
-      const newPassword = "testing";
+  describe('Can Change Civ Password', () => {
+    const ccpTest = (filename) => {
+      const newPassword = 'testing';
       const changePosition = 3;
-  
+
       const data = fs.readFileSync(filename);
       const changePasswordResult = parser.changeCivPassword(data, changePosition, newPassword);
       const result = parser.parse(changePasswordResult);
@@ -48,9 +48,9 @@ describe('Parser', () => {
     it('beyond earth', () => ccpTest('./saves/beyondearth.CivBESave'));
   });
 
-  describe('Can Change Player Name', function() {
-    const cpnTest = filename => {
-      const newName = "newname";
+  describe('Can Change Player Name', () => {
+    const cpnTest = (filename) => {
+      const newName = 'newname';
       const changePosition = 3;
 
       const data = fs.readFileSync(filename);
@@ -64,15 +64,15 @@ describe('Parser', () => {
     it('beyond earth', () => cpnTest('./saves/beyondearth.CivBESave'));
   });
 
-  describe('Can Change Civ Type', function() {
-    const cctTest = filename => {
+  describe('Can Change Civ Type', () => {
+    const cctTest = (filename) => {
       const changePosition = 2;
-      const changeValue = 1; 
-  
+      const changeValue = 1;
+
       const data = fs.readFileSync(filename);
       const changeCivTypeResult = parser.changeCivType(data, changePosition, changeValue);
       const result = parser.parse(changeCivTypeResult);
-  
+
       assert.equal(result.civilizations[changePosition].type, changeValue);
     };
 
@@ -81,27 +81,26 @@ describe('Parser', () => {
     it('beyond earth', () => cctTest('./saves/beyondearth.CivBESave'));
   });
 
-  describe('Can Change Current Player Index', function() {
-    const ccpiTest = filename => {
+  describe('Can Change Current Player Index', () => {
+    const ccpiTest = (filename) => {
       const newPlayer = 1;
 
       const data = fs.readFileSync(filename);
       const changeCivTypeResult = parser.changePlayer(data, newPlayer);
       const result = parser.parse(changeCivTypeResult);
-  
+
       assert.equal(result.player, newPlayer);
     };
 
     it('normal', () => ccpiTest('./saves/newSlack19-before.Civ5Save'));
     it('turn 64', () => ccpiTest('./saves/turn64.Civ5Save'));
     it('beyond earth', () => ccpiTest('./saves/beyondearth.CivBESave'));
-    
   });
 
-  it('Can parse beyond earth', function() {
+  it('Can parse beyond earth', () => {
     const data = fs.readFileSync('./saves/beyondearth.CivBESave');
     const result = parser.parse(data);
-  
+
     assert.equal(result.civ, 'CIVBE');
     assert.equal(result.save, 2);
     assert.equal(result.game, '1.1.2.4035 ');
@@ -123,11 +122,11 @@ describe('Parser', () => {
     const data = fs.readFileSync('./saves/bad.Civ5Save');
     assert.throws(() => parser.parse(data));
   });
-  
+
   it('Parses Turn 64', () => {
-    let data = fs.readFileSync('./saves/turn64.Civ5Save');
-    let result = parser.parse(data);
-  
+    const data = fs.readFileSync('./saves/turn64.Civ5Save');
+    const result = parser.parse(data);
+
     assert.equal(result.civ, 'CIV5');
     assert.equal(result.save, 8);
     assert.equal(result.game, '1.0.3.279 (403694)');
@@ -144,8 +143,8 @@ describe('Parser', () => {
     assert.equal(result.barbarianCount, 9);
     assert.equal(result.player, 0);
 
-    result.civilizations.forEach(function(s) {
-      assert.notEqual([1,2,3].indexOf(s.type), -1);
+    result.civilizations.forEach((s) => {
+      assert.notEqual([1, 2, 3].indexOf(s.type), -1);
     });
   });
 });

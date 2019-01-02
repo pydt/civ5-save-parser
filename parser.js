@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  parse: function(data){
+  parse: function(data) {
     const result = {};
     const buffer = new Buffer(data);
 
@@ -10,41 +10,41 @@ module.exports = {
 
     // Make sure file ends correctly...
     if (!buffer.slice(buffer.length - 4, buffer.length).equals(new Buffer([0, 0, 0xFF, 0xFF]))) {
-      throw new Error("Truncated save file detected!");
+      throw new Error('Truncated save file detected!');
     }
 
     let chunkCount = 0;
     let chunk = {
-      endIndex: result.headerLength
+      endIndex: result.headerLength,
     };
 
     result.civilizations = [];
 
     while (null !== (chunk = getChunk(buffer, chunk.endIndex))) {
       // 1st chunk contains player names
-      if (chunkCount === 1){
-        while(chunk.pos < chunk.buffer.length){
+      if (chunkCount === 1) {
+        while (chunk.pos < chunk.buffer.length) {
           result.civilizations.push({
-            playerName: readString(chunk)
+            playerName: readString(chunk),
           });
         }
       }
 
       // 2nd chunk contains the type/status of civilization - 1 alive, 2 dead, 3 human, 4 missing
-      if (chunkCount === 2){
+      if (chunkCount === 2) {
         let i = 0;
-        while(chunk.pos < chunk.buffer.length){
+        while (chunk.pos < chunk.buffer.length) {
           result.civilizations[i].type = readInt(chunk);
           i++;
         }
       }
 
-      // 6th chunk contains all civ names 
-      if (chunkCount === 6){
+      // 6th chunk contains all civ names
+      if (chunkCount === 6) {
         let i = 0;
-        while(chunk.pos < chunk.buffer.length){
-          let civ = readString(chunk);
-          if(civ.trim() !== ''){
+        while (chunk.pos < chunk.buffer.length) {
+          const civ = readString(chunk);
+          if (civ.trim() !== '') {
             result.civilizations[i].name = civ;
           }
           i++;
@@ -57,9 +57,9 @@ module.exports = {
         // Read through leader names
         result.barbarianCount = 0;
         let i = 0;
-        while(chunk.pos < chunk.buffer.length && i < result.civilizations.length){
+        while (chunk.pos < chunk.buffer.length && i < result.civilizations.length) {
           result.civilizations[i].leader = readString(chunk);
-          if(result.civilizations[i].leader === 'LEADER_BARBARIAN'){
+          if (result.civilizations[i].leader === 'LEADER_BARBARIAN') {
             result.barbarianCount++;
           }
           i++;
@@ -69,19 +69,19 @@ module.exports = {
       }
 
       // 11th chunk contains passwords
-      if (chunkCount === 11){
+      if (chunkCount === 11) {
         let i = 0;
-        while(chunk.pos < chunk.buffer.length && i < result.civilizations.length){
+        while (chunk.pos < chunk.buffer.length && i < result.civilizations.length) {
           result.civilizations[i].password = readString(chunk);
           i++;
         }
       }
 
       // 23rd chunk contains player colors
-      if (chunkCount === 23){
+      if (chunkCount === 23) {
         // Read through player colors
         let i = 0;
-        while(chunk.pos < chunk.buffer.length && i < result.civilizations.length){
+        while (chunk.pos < chunk.buffer.length && i < result.civilizations.length) {
           result.civilizations[i].color = readString(chunk);
           i++;
         }
@@ -89,9 +89,9 @@ module.exports = {
       chunkCount++;
     }
 
-    //remove missing civs (status 4)
-    for(let i = result.civilizations.length-1; i >= 0; i--) {
-      if(!result.civilizations[i].name || result.civilizations[i].type === 4) {
+    // remove missing civs (status 4)
+    for (let i = result.civilizations.length-1; i >= 0; i--) {
+      if (!result.civilizations[i].name || result.civilizations[i].type === 4) {
         result.civilizations.splice(i, 1);
       }
     }
@@ -106,7 +106,7 @@ module.exports = {
     data = writeInt(data, 2, position, type);
 
     if (result.civ === 'CIV5') {
-     data = writeInt(data, 26, position, type);
+      data = writeInt(data, 26, position, type);
     }
 
     if (result.civ === 'CIVBE') {
@@ -121,12 +121,12 @@ module.exports = {
     buffer.writeUInt32LE(newPlayer, chunk.startIndex + chunk.buffer.length - 16);
     return buffer;
   },
-  changeCivPassword: function(data, position, password){
+  changeCivPassword: function(data, position, password) {
     return writeString(data, 11, position, password);
   },
-  changePlayerName: function(data, position, playerName){
+  changePlayerName: function(data, position, playerName) {
     return writeString(data, 1, position, playerName);
-  }
+  },
 };
 
 // Parse helper functions
@@ -135,7 +135,7 @@ function getChunk(buffer, startIndex) {
   const delimiter = new Buffer([0x40, 0, 0, 0]);
   const result = {
     startIndex: startIndex,
-    pos: 0
+    pos: 0,
   };
 
   if (!startIndex) {
@@ -154,12 +154,12 @@ function getChunk(buffer, startIndex) {
   return null;
 }
 
-function processHeader(buffer, result){
-  let pos = 0;
-  let buf = {
+function processHeader(buffer, result) {
+  const buf = {
     buffer: buffer,
-    pos: 0
-  }
+    pos: 0,
+  };
+
   result.civ = readString(buf, 4);
 
   if (result.civ !== 'CIV5') {
@@ -175,7 +175,7 @@ function processHeader(buffer, result){
   result.game = readString(buf);
   result.build = readString(buf);
   result.turn = readInt(buf);
-  //TODO: investigate this Byte
+  // TODO: investigate this Byte
   skipBytes(buf, 1);
   result.startingCiv = readString(buf);
   result.handicap = readString(buf);
@@ -193,38 +193,40 @@ function processHeader(buffer, result){
     buf.pos += 4;
     const name = readString(buf);
 
-    result.mods.push({ id, name });
+    result.mods.push({id, name});
   }
 
-  //Skipping rest of header - There is still more content in the header to investigate
+  // Skipping rest of header - There is still more content in the header to investigate
   const delimiter = new Buffer([0x40, 0, 0, 0]);
-  result.headerLength = buf.buffer.indexOf(delimiter, buf.pos);;
+  result.headerLength = buf.buffer.indexOf(delimiter, buf.pos);
 }
 
-function readString(buf, length){
-  if(!length){
+function readString(buf, length) {
+  if (!length) {
     length = readInt(buf);
-    if(length === 0 || length > 1000)
+
+    if (length === 0 || length > 1000) {
       return '';
+    }
   }
 
   return buf.buffer.slice(buf.pos, (buf.pos += length)).toString();
 }
 
-function readInt(buf){
-  let int = buf.buffer.readUInt32LE(buf.pos);
+function readInt(buf) {
+  const int = buf.buffer.readUInt32LE(buf.pos);
   buf.pos+=4;
   return int;
 }
 
-function skipBytes(buf, num){
+function skipBytes(buf, num) {
   buf.pos += num;
 }
 
 // Write helper functions
-function encodeString(text){
-  let length = text.length;
-  let result = new Buffer(length+4);
+function encodeString(text) {
+  const length = text.length;
+  const result = new Buffer(length+4);
 
   result.writeUInt32LE(length, 0);
   result.write(text, 4);
@@ -240,30 +242,30 @@ function findChunk(data, chunkNum) {
 
   let chunkCount = 0;
   let chunk = {
-    endIndex: result.headerLength
+    endIndex: result.headerLength,
   };
 
   while (null !== (chunk = getChunk(buffer, chunk.endIndex))) {
-    if (chunkCount === chunkNum){
+    if (chunkCount === chunkNum) {
       return chunk;
     }
-    
+
     chunkCount++;
   }
-  
+
   throw new Error('Could not find chunk ' + chunkNum);
 }
 
 function writeInt(data, chunkNum, position, newValue) {
   const chunk = findChunk(data, chunkNum);
   const buffer = new Buffer(data);
-  
+
   let posCount = 0;
-  
-  while(chunk.pos < chunk.buffer.length){
-    if(posCount === position){
-      let pos = chunk.startIndex + chunk.pos;
-      let toUpdate = buffer.slice(pos, pos + 4);
+
+  while (chunk.pos < chunk.buffer.length) {
+    if (posCount === position) {
+      const pos = chunk.startIndex + chunk.pos;
+      const toUpdate = buffer.slice(pos, pos + 4);
       toUpdate.writeUInt32LE(newValue);
       return buffer;
     }
@@ -271,27 +273,28 @@ function writeInt(data, chunkNum, position, newValue) {
     readInt(chunk);
     posCount++;
   }
-  
+
   throw new Error('Could not find position ' + position);
 }
 
-function writeString(data, chunkNum, position, newString){
+function writeString(data, chunkNum, position, newString) {
   const chunk = findChunk(data, chunkNum);
 
-  for(let i=0; i<position; i++){
+  for (let i=0; i<position; i++) {
     readString(chunk);
   }
-  let pos = chunk.startIndex + chunk.pos;
-  let encodedString = encodeString(newString);
-  let currentString = readString(chunk);
 
-  //create new buffer with new length
+  const pos = chunk.startIndex + chunk.pos;
+  const encodedString = encodeString(newString);
+  const currentString = readString(chunk);
+
+  // create new buffer with new length
   const result = new Buffer(data.length - (currentString.length + 4) + encodedString.length);
-  //get buffer before currentString
+  // get buffer before currentString
   data.copy(result, 0, 0, pos);
-  //add encodedString to buffer
+  // add encodedString to buffer
   encodedString.copy(result, pos);
-  //copy the rest of the buffer starting after the existing string 
+  // copy the rest of the buffer starting after the existing string
   data.copy(result, pos + encodedString.length, pos + currentString.length + 4);
 
   return result;
