@@ -32,76 +32,70 @@ describe('Parser', () => {
     });
   });
 
-  it('Can Change Civ Password', function() {
-    const newPassword = "testing";
-    const changePosition = 4;
+  describe('Can Change Civ Password', function() {
+    const ccpTest = filename => {
+      const newPassword = "testing";
+      const changePosition = 3;
+  
+      const data = fs.readFileSync(filename);
+      const changePasswordResult = parser.changeCivPassword(data, changePosition, newPassword);
+      const result = parser.parse(changePasswordResult);
+      assert.equal(result.civilizations[changePosition].password, newPassword);
+    };
 
-    const data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
-    const changePasswordResult = parser.changeCivPassword(data, changePosition, newPassword);
-    const result = parser.parse(changePasswordResult);
-    assert.equal(result.civilizations[changePosition].password, newPassword);
+    it('normal', () => ccpTest('./saves/newSlack19-before.Civ5Save'));
+    it('turn 64', () => ccpTest('./saves/turn64.Civ5Save'));
+    it('beyond earth', () => ccpTest('./saves/beyondearth.CivBESave'));
   });
 
-  it('Can Change Civ Password - Turn 64', function() {
-    const newPassword = "testing";
-    const changePosition = 3;
+  describe('Can Change Player Name', function() {
+    const cpnTest = filename => {
+      const newName = "newname";
+      const changePosition = 3;
 
-    let data = fs.readFileSync('./saves/turn64.Civ5Save');
-    const changePasswordResult = parser.changeCivPassword(data, changePosition, newPassword);
-    const result = parser.parse(changePasswordResult);
-    assert.equal(result.civilizations[changePosition].password, newPassword);
+      const data = fs.readFileSync(filename);
+      const changePlayerNameResult = parser.changePlayerName(data, changePosition, newName);
+      const result = parser.parse(changePlayerNameResult);
+      assert.equal(result.civilizations[changePosition].playerName, newName);
+    };
+
+    it('normal', () => cpnTest('./saves/newSlack19-before.Civ5Save'));
+    it('turn 64', () => cpnTest('./saves/turn64.Civ5Save'));
+    it('beyond earth', () => cpnTest('./saves/beyondearth.CivBESave'));
   });
 
-  it('Can Change Player Name', function() {
-    const newName = "newname";
-    const changePosition = 4;
+  describe('Can Change Civ Type', function() {
+    const cctTest = filename => {
+      const changePosition = 2;
+      const changeValue = 1; 
+  
+      const data = fs.readFileSync(filename);
+      const changeCivTypeResult = parser.changeCivType(data, changePosition, changeValue);
+      const result = parser.parse(changeCivTypeResult);
+  
+      assert.equal(result.civilizations[changePosition].type, changeValue);
+    };
 
-    const data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
-    const changePlayerNameResult = parser.changePlayerName(data, changePosition, newName);
-    const result = parser.parse(changePlayerNameResult);
-    assert.equal(result.civilizations[changePosition].playerName, newName);
+    it('normal', () => cctTest('./saves/newSlack19-before.Civ5Save'));
+    it('turn 64', () => cctTest('./saves/turn64.Civ5Save'));
+    it('beyond earth', () => cctTest('./saves/beyondearth.CivBESave'));
   });
 
-  it('Can Change Player Name - Turn 64', function() {
-    const newName = "newname";
-    const changePosition = 3;
+  describe('Can Change Current Player Index', function() {
+    const ccpiTest = filename => {
+      const newPlayer = 1;
 
-    let data = fs.readFileSync('./saves/turn64.Civ5Save');
-    const changePlayerNameResult = parser.changePlayerName(data, changePosition, newName);
-    const result = parser.parse(changePlayerNameResult);
-    assert.equal(result.civilizations[changePosition].playerName, newName);
-  });
+      const data = fs.readFileSync(filename);
+      const changeCivTypeResult = parser.changePlayer(data, newPlayer);
+      const result = parser.parse(changeCivTypeResult);
+  
+      assert.equal(result.player, newPlayer);
+    };
 
-  it('Can Change Civ Type', function() {
-    const changePosition = 2;
-    const changeValue = 1; 
-
-    const data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
-    const changeCivTypeResult = parser.changeCivType(data, changePosition, changeValue);
-    const result = parser.parse(changeCivTypeResult);
-
-    assert.equal(result.civilizations[changePosition].type, changeValue);
-  });
-
-  it('Can Change Civ Type - Turn 64', function() {
-    const changePosition = 3;
-    const changeValue = 1; 
-
-    let data = fs.readFileSync('./saves/turn64.Civ5Save');
-    const changeCivTypeResult = parser.changeCivType(data, changePosition, changeValue);
-    const result = parser.parse(changeCivTypeResult);
-
-    assert.equal(result.civilizations[changePosition].type, changeValue);
-  });
-
-  it('Can Change Current Player Index', function() {
-    const newPlayer = 1;
-
-    const data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
-    const changeCivTypeResult = parser.changePlayer(data, newPlayer);
-    const result = parser.parse(changeCivTypeResult);
-
-    assert.equal(result.player, newPlayer);
+    it('normal', () => ccpiTest('./saves/newSlack19-before.Civ5Save'));
+    it('turn 64', () => ccpiTest('./saves/turn64.Civ5Save'));
+    it('beyond earth', () => ccpiTest('./saves/beyondearth.CivBESave'));
+    
   });
 
   it('Can parse beyond earth', function() {
