@@ -42,13 +42,33 @@ describe('Parser', () => {
     assert.equal(result.civilizations[changePosition].password, newPassword);
   });
 
+  it('Can Change Civ Password - Turn 64', function() {
+    const newPassword = "testing";
+    const changePosition = 3;
+
+    let data = fs.readFileSync('./saves/turn64.Civ5Save');
+    const changePasswordResult = parser.changeCivPassword(data, changePosition, newPassword);
+    const result = parser.parse(changePasswordResult);
+    assert.equal(result.civilizations[changePosition].password, newPassword);
+  });
+
   it('Can Change Player Name', function() {
     const newName = "newname";
     const changePosition = 4;
 
     const data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
-    const changePasswordResult = parser.changePlayerName(data, changePosition, newName);
-    const result = parser.parse(changePasswordResult);
+    const changePlayerNameResult = parser.changePlayerName(data, changePosition, newName);
+    const result = parser.parse(changePlayerNameResult);
+    assert.equal(result.civilizations[changePosition].playerName, newName);
+  });
+
+  it('Can Change Player Name - Turn 64', function() {
+    const newName = "newname";
+    const changePosition = 3;
+
+    let data = fs.readFileSync('./saves/turn64.Civ5Save');
+    const changePlayerNameResult = parser.changePlayerName(data, changePosition, newName);
+    const result = parser.parse(changePlayerNameResult);
     assert.equal(result.civilizations[changePosition].playerName, newName);
   });
 
@@ -57,6 +77,17 @@ describe('Parser', () => {
     const changeValue = 1; 
 
     const data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
+    const changeCivTypeResult = parser.changeCivType(data, changePosition, changeValue);
+    const result = parser.parse(changeCivTypeResult);
+
+    assert.equal(result.civilizations[changePosition].type, changeValue);
+  });
+
+  it('Can Change Civ Type - Turn 64', function() {
+    const changePosition = 3;
+    const changeValue = 1; 
+
+    let data = fs.readFileSync('./saves/turn64.Civ5Save');
     const changeCivTypeResult = parser.changeCivType(data, changePosition, changeValue);
     const result = parser.parse(changeCivTypeResult);
 
@@ -99,7 +130,7 @@ describe('Parser', () => {
     assert.throws(() => parser.parse(data));
   });
   
-  it('Parses turn 64', () => {
+  it('Parses Turn 64', () => {
     let data = fs.readFileSync('./saves/turn64.Civ5Save');
     let result = parser.parse(data);
   

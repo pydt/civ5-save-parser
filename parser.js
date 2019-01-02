@@ -233,11 +233,14 @@ function encodeString(text){
 }
 
 function findChunk(data, chunkNum) {
+  const result = {};
   const buffer = new Buffer(data);
+
+  processHeader(buffer, result);
 
   let chunkCount = 0;
   let chunk = {
-    endIndex: 0
+    endIndex: result.headerLength
   };
 
   while (null !== (chunk = getChunk(buffer, chunk.endIndex))) {
