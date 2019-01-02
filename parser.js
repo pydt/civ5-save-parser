@@ -15,7 +15,7 @@ module.exports = {
 
     let chunkCount = 0;
     let chunk = {
-      endIndex: 0
+      endIndex: result.headerLength
     };
 
     result.civilizations = [];
@@ -195,6 +195,10 @@ function processHeader(buffer, result){
 
     result.mods.push({ id, name });
   }
+
+  //Skipping rest of header - There is still more content in the header to investigate
+  const delimiter = new Buffer([0x40, 0, 0, 0]);
+  result.headerLength = buf.buffer.indexOf(delimiter, buf.pos);;
 }
 
 function readString(buf, length){
