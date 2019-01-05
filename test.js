@@ -46,6 +46,7 @@ describe('Parser', () => {
     it('normal', () => ccpTest('./saves/newSlack19-before.Civ5Save'));
     it('turn 64', () => ccpTest('./saves/turn64.Civ5Save'));
     it('beyond earth', () => ccpTest('./saves/beyondearth.CivBESave'));
+    it('beyond earth turn 64', () => ccpTest('./saves/000129.CivBESave'));
   });
 
   describe('Can Change Player Name', () => {
@@ -62,6 +63,7 @@ describe('Parser', () => {
     it('normal', () => cpnTest('./saves/newSlack19-before.Civ5Save'));
     it('turn 64', () => cpnTest('./saves/turn64.Civ5Save'));
     it('beyond earth', () => cpnTest('./saves/beyondearth.CivBESave'));
+    it('beyond earth turn 64', () => cpnTest('./saves/000129.CivBESave'));
   });
 
   describe('Can Change Civ Type', () => {
@@ -79,6 +81,7 @@ describe('Parser', () => {
     it('normal', () => cctTest('./saves/newSlack19-before.Civ5Save'));
     it('turn 64', () => cctTest('./saves/turn64.Civ5Save'));
     it('beyond earth', () => cctTest('./saves/beyondearth.CivBESave'));
+    it('beyond earth turn 64', () => cctTest('./saves/000129.CivBESave'));
   });
 
   describe('Can Change Current Player Index', () => {
@@ -95,6 +98,7 @@ describe('Parser', () => {
     it('normal', () => ccpiTest('./saves/newSlack19-before.Civ5Save'));
     it('turn 64', () => ccpiTest('./saves/turn64.Civ5Save'));
     it('beyond earth', () => ccpiTest('./saves/beyondearth.CivBESave'));
+    it('beyond earth turn 64', () => ccpiTest('./saves/000129.CivBESave'));
   });
 
   it('Can parse beyond earth', () => {
@@ -141,6 +145,31 @@ describe('Parser', () => {
 
     assert.equal(result.civilizations.length, 13);
     assert.equal(result.barbarianCount, 9);
+    assert.equal(result.player, 0);
+
+    result.civilizations.forEach((s) => {
+      assert.notEqual([1, 2, 3].indexOf(s.type), -1);
+    });
+  });
+
+  it('Parses Beyond Earth Turn 64', () => {
+    const data = fs.readFileSync('./saves/000129.CivBESave');
+    const result = parser.parse(data);
+
+    assert.equal(result.civ, 'CIVBE');
+    assert.equal(result.save, 2);
+    assert.equal(result.game, '1.1.2.4035 ');
+    assert.equal(result.build, '');
+    assert.equal(result.turn, 64);
+    assert.equal(result.startingCiv, 'CIVILIZATION_KAVITHAN');
+    assert.equal(result.handicap, 'HANDICAP_MERCURY');
+    assert.equal(result.era, 'ERA_ANCIENT');
+    assert.equal(result.gameSpeed, 'GAMESPEED_QUICK');
+    assert.equal(result.worldSize, 'WORLDSIZE_SMALL');
+    assert.equal(result.mapScript, 'Assets\\Maps\\Protean.lua');
+
+    assert.equal(result.civilizations.length, 8);
+    assert.equal(result.barbarianCount, 0);
     assert.equal(result.player, 0);
 
     result.civilizations.forEach((s) => {

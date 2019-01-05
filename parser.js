@@ -77,15 +77,6 @@ module.exports = {
         }
       }
 
-      // 23rd chunk contains player colors
-      if (chunkCount === 23) {
-        // Read through player colors
-        let i = 0;
-        while (chunk.pos < chunk.buffer.length && i < result.civilizations.length) {
-          result.civilizations[i].color = readString(chunk);
-          i++;
-        }
-      }
       chunkCount++;
     }
 
