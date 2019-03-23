@@ -29,6 +29,7 @@ describe('Parser', () => {
 
     result.civilizations.forEach((s) => {
       assert.notEqual([1, 2, 3].indexOf(s.type), -1);
+      assert.equal(s.color.indexOf('PLAYERCOLOR_'), 0);
     });
   });
 
@@ -120,6 +121,11 @@ describe('Parser', () => {
     assert.equal(result.civilizations.length, 8);
     assert.equal(result.barbarianCount, 0);
     assert.equal(result.player, 1);
+
+    result.civilizations.forEach((s) => {
+      assert.notEqual([1, 2, 3].indexOf(s.type), -1);
+      assert.equal(s.color.indexOf('PLAYERCOLOR_'), 0);
+    });
   });
 
   it('Correctly throws error on bad save', () => {
@@ -149,6 +155,7 @@ describe('Parser', () => {
 
     result.civilizations.forEach((s) => {
       assert.notEqual([1, 2, 3].indexOf(s.type), -1);
+      assert.equal(s.color.indexOf('PLAYERCOLOR_'), 0);
     });
   });
 
@@ -174,6 +181,7 @@ describe('Parser', () => {
 
     result.civilizations.forEach((s) => {
       assert.notEqual([1, 2, 3].indexOf(s.type), -1);
+      assert.equal(s.color.indexOf('PLAYERCOLOR_'), 0);
     });
   });
 });

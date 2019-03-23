@@ -1,8 +1,10 @@
 'use strict';
 
 module.exports = {
-  parse: function(data) {
-    const result = {};
+  parse: function(data, validate = true) {
+    const result = {
+      chunkStarts: [],
+    };
     const buffer = new Buffer(data);
 
     // Process header information
@@ -21,6 +23,8 @@ module.exports = {
     result.civilizations = [];
 
     while (null !== (chunk = getChunk(buffer, chunk.endIndex))) {
+      result.chunkStarts[chunkCount] = chunk.startIndex - DELIMITER.length;
+
       // 1st chunk contains player names
       if (chunkCount === 1) {
         while (chunk.pos < chunk.buffer.length) {
@@ -31,10 +35,30 @@ module.exports = {
       }
 
       // 2nd chunk contains the type/status of civilization - 1 alive, 2 dead, 3 human, 4 missing
-      if (chunkCount === 2) {
+      if (
+        chunkCount === 2 ||
+        (result.civ === 'CIV5' && chunkCount === 26) ||
+        (result.civ === 'CIVBE' && chunkCount === 29)
+      ) {
         let i = 0;
         while (chunk.pos < chunk.buffer.length) {
-          result.civilizations[i].type = readInt(chunk);
+          if (!result.civilizations[i]) {
+            break;
+          }
+
+          if (!result.civilizations[i].type) {
+            result.civilizations[i].type = readInt(chunk);
+          } else {
+            const secondaryType = readInt(chunk);
+            if (validate && result.civilizations[i].type !== secondaryType) {
+              console.log(chunk.buffer);
+              throw new Error(
+                  `Secondary player type chunk did not validate! ` +
+                  `Index: ${i}, type: ${result.civilizations[i].type}, secondary: ${secondaryType}`
+              );
+            }
+          }
+
           i++;
         }
       }
@@ -77,6 +101,22 @@ module.exports = {
         }
       }
 
+      if ((result.civ === 'CIV5' && chunkCount === 23) || (result.civ === 'CIVBE' && chunkCount === 26)) {
+        // Read through player colors, make sure we find them to fix turn 64 issues
+        let i = 0;
+        while (chunk.pos < chunk.buffer.length && i < result.civilizations.length) {
+          const colorString = readString(chunk);
+
+          if (i === 0 && !colorString) {
+            chunkCount--;
+            break;
+          }
+
+          result.civilizations[i].color = colorString;
+
+          i++;
+        }
+      }
       chunkCount++;
     }
 
@@ -121,21 +161,21 @@ module.exports = {
 };
 
 // Parse helper functions
+const DELIMITER = new Buffer([0x40, 0, 0, 0]);
 
 function getChunk(buffer, startIndex) {
-  const delimiter = new Buffer([0x40, 0, 0, 0]);
   const result = {
     startIndex: startIndex,
     pos: 0,
   };
 
   if (!startIndex) {
-    result.startIndex = buffer.indexOf(delimiter);
+    result.startIndex = buffer.indexOf(DELIMITER);
   }
 
-  result.startIndex += delimiter.length;
+  result.startIndex += DELIMITER.length;
 
-  result.endIndex = buffer.indexOf(delimiter, result.startIndex);
+  result.endIndex = buffer.indexOf(DELIMITER, result.startIndex);
 
   if (result.endIndex >= 0) {
     result.buffer = buffer.slice(result.startIndex, result.endIndex);
@@ -188,8 +228,7 @@ function processHeader(buffer, result) {
   }
 
   // Skipping rest of header - There is still more content in the header to investigate
-  const delimiter = new Buffer([0x40, 0, 0, 0]);
-  result.headerLength = buf.buffer.indexOf(delimiter, buf.pos);
+  result.headerLength = buf.buffer.indexOf(DELIMITER, buf.pos);
 }
 
 function readString(buf, length) {
@@ -226,25 +265,9 @@ function encodeString(text) {
 }
 
 function findChunk(data, chunkNum) {
-  const result = {};
+  const result = module.exports.parse(data, false);
   const buffer = new Buffer(data);
-
-  processHeader(buffer, result);
-
-  let chunkCount = 0;
-  let chunk = {
-    endIndex: result.headerLength,
-  };
-
-  while (null !== (chunk = getChunk(buffer, chunk.endIndex))) {
-    if (chunkCount === chunkNum) {
-      return chunk;
-    }
-
-    chunkCount++;
-  }
-
-  throw new Error('Could not find chunk ' + chunkNum);
+  return getChunk(buffer, result.chunkStarts[chunkNum]);
 }
 
 function writeInt(data, chunkNum, position, newValue) {
