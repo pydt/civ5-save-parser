@@ -1,5 +1,8 @@
 'use strict';
 
+const iconv = require('iconv-lite');
+const diacritics = require('diacritics');
+
 module.exports = {
   parse: function(data, validate = true) {
     const result = {
@@ -255,11 +258,12 @@ function skipBytes(buf, num) {
 
 // Write helper functions
 function encodeString(text) {
-  const length = text.length;
+  const safeValue = iconv.encode(diacritics.remove(text), 'ascii');
+  const length = safeValue.length;
   const result = new Buffer(length+4);
 
   result.writeUInt32LE(length, 0);
-  result.write(text, 4);
+  safeValue.copy(result, 4);
 
   return result;
 }
@@ -300,16 +304,18 @@ function writeString(data, chunkNum, position, newString) {
 
   const pos = chunk.startIndex + chunk.pos;
   const encodedString = encodeString(newString);
+  const encodedLength = encodedString.length;
   const currentString = readString(chunk);
+  const currentLength = Buffer.byteLength(currentString, 'utf8');
 
   // create new buffer with new length
-  const result = new Buffer(data.length - (currentString.length + 4) + encodedString.length);
+  const result = new Buffer(data.length - (currentLength + 4) + encodedLength);
   // get buffer before currentString
   data.copy(result, 0, 0, pos);
   // add encodedString to buffer
   encodedString.copy(result, pos);
   // copy the rest of the buffer starting after the existing string
-  data.copy(result, pos + encodedString.length, pos + currentString.length + 4);
+  data.copy(result, pos + encodedLength, pos + currentLength + 4);
 
   return result;
 }

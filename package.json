@@ -1,6 +1,6 @@
 {
   "name": "pydt-civ5-save-parser",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Civ5 save file parser allows you to parse out the useful information of a civ5 save file to read which turn it is, which player is up, and which civs are playing as well as modify the player's password and AI/Human setting.",
   "main": "parser.js",
   "scripts": {
@@ -22,5 +22,9 @@
     "eslint": "^5.11.1",
     "eslint-config-google": "^0.11.0",
     "mocha": "^5.2.0"
+  },
+  "dependencies": {
+    "diacritics": "^1.3.0",
+    "iconv-lite": "^0.5.1"
   }
 }

@@ -184,4 +184,11 @@ describe('Parser', () => {
       assert.equal(s.color.indexOf('PLAYERCOLOR_'), 0);
     });
   });
+
+  it('Can handle diacritics appropriately', () => {
+    let data = fs.readFileSync('./saves/newSlack19-before.Civ5Save');
+    data = parser.changePlayerName(data, 0, 'Míké Rósáck');
+    const parsed = parser.parse(data);
+    assert.equal(parsed.civilizations[0].playerName, 'Mike Rosack');
+  });
 });
